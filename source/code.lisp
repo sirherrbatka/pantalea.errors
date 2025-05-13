@@ -54,9 +54,10 @@
     `(flet ((,!impl () ,@body))
        (if *chain-enabled*
            (handler-case (,!impl)
-             ((or (not chained-error) (and link-mixin (not (or ,@enabled-errors))))
+             ((and (not (or ,@enabled-errors)) (or (not chained-error) link-mixin))
                (*cause*)
-               ,error-form))
+               (let ((er ,error-form))
+                 (error er))))
            (,!impl)))))
 
 (defun make-chained (type &rest args)
