@@ -16,12 +16,15 @@
       (format stream "~%")
       (format stream "[~a] Caused by:~%~a" *nested-level* cause))))
 
+(defun report-chained-error (condition stream)
+  (format stream "Error of type ~a was signaled." (type-of condition))
+  (format-cause condition stream))
+
 (define-condition chained-error (cl:error)
-  ((%cause :initform *cause*
+  ((%cause :initarg :cause
            :reader chained-error-cause))
-  (:report (lambda (condition stream)
-             (format stream "Error ~a was signaled." (type-of condition))
-             (format-cause condition stream))))
+  (:report report-chained-error)
+  (:default-initargs :cause *cause*))
 
 (defgeneric chained-error-root-cause (cl:error)
   (:method ((error cl:error))
@@ -34,13 +37,15 @@
 (defun link-error-name (error-name)
   (intern (format nil "~a/LINKED" error-name) (symbol-package error-name)))
 
-(defmacro def (error-name (&rest parent-types) (&rest slot-specs) &body options)
+(defmacro def (error-name (&rest parent-types) (&rest slot-specs) &optional options)
   `(progn
      (define-condition ,error-name ,(if (endp parent-types) '(chained-error) parent-types)
        ,slot-specs
-       ,@options)
+       (,@options
+        :report report-chained-error))
      (define-condition ,(link-error-name error-name) (link-mixin ,error-name)
-       ())))
+       ()
+       (,@options :report report-chained-error))))
 
 (defparameter *chain-enabled* t)
 
