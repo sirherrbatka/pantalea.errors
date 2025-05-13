@@ -50,10 +50,14 @@
 (defparameter *chain-enabled* t)
 
 (defmacro with-link (error-form (&rest enabled-errors) &body body)
-  `(handler-case (progn ,@body)
-     ((or (not chained-error) (and link-mixin (not (or ,@enabled-errors))))
-       (*cause*)
-       ,error-form)))
+  (alexandria:with-gensyms (!impl)
+    `(flet ((,!impl () ,@body))
+       (if *chain-enabled*
+           (handler-case (,!impl)
+             ((or (not chained-error) (and link-mixin (not (or ,@enabled-errors))))
+               (*cause*)
+               ,error-form))
+           (,!impl)))))
 
 (defun make-chained (type &rest args)
   (if *chained-enabled*
