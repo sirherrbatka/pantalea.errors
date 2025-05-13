@@ -5,8 +5,18 @@
   ())
 
 (define-condition chain-error (cl:error)
-  ((%reason :initform nil
-            :accessor chain-error-reason)))
+  ((%cause :initform nil
+           :accessor chain-error-cause))
+  (:report (lambda (condition stream)
+             (format stream "Error ~a was signaled" (type-of condition))
+             (alexandria:when-let ((cause (chain-error-cause condition)))
+               (format stream " caused by:~%~a" cause)))))
+
+(defgeneric chain-error-root-cause (cl:error)
+  (:method ((error cl:error))
+    error)
+  (:method ((error chain-error))
+    (chain-error-root-cause (chain-error-cause error))))
 
 (defun link-error-name (error-name)
   (intern (format nil "~a/LINKED" error-name)))
@@ -15,7 +25,7 @@
   `(progn
      (define-condition ,error-name ,(if (endp parent-types) '(chain-error) parent-types)
        ,slot-specs
-       ,options)
+       ,@options)
      (define-condition ,(link-error-name error-name) (link-mixin ,error-name)
        ())))
 
