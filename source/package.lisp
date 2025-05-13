@@ -3,7 +3,8 @@
   (:export
    #:*chain-enabled*
    #:def
-   #:chain-error-cause
+   #:chained-error-cause
+   #:chained-error-root-cause
    #:!!!
-   #:make-chain-condition
+   #:make-chained
    #:with-link))
