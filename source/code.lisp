@@ -6,13 +6,18 @@
 
 (defparameter *cause* nil)
 
+(defgeneric chained-error-cause (error))
+
+(defun format-cause (error stream)
+  (alexandria:when-let ((cause (chained-error-cause error)))
+    (format stream " caused by:~%~a" cause)))
+
 (define-condition chained-error (cl:error)
   ((%cause :initform *cause*
            :reader chained-error-cause))
   (:report (lambda (condition stream)
              (format stream "Error ~a was signaled" (type-of condition))
-             (alexandria:when-let ((cause (chained-error-cause condition)))
-               (format stream " caused by:~%~a" cause)))))
+             (format-cause condition stream))))
 
 (defgeneric chained-error-root-cause (cl:error)
   (:method ((error cl:error))

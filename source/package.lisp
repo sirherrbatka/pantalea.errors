@@ -5,6 +5,7 @@
    #:def
    #:chained-error-cause
    #:chained-error-root-cause
+   #:format-cause
    #:!!!
    #:make-chained
    #:with-link))
