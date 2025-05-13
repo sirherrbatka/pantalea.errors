@@ -51,7 +51,8 @@
 
 (defmacro with-link (error-form (&rest enabled-errors) &body body)
   `(handler-case (progn ,@body)
-     ((and link-mixin (not (or ,@enabled-errors))) (*cause*)
+     ((or (not chained-error) (and link-mixin (not (or ,@enabled-errors))))
+       (*cause*)
        ,error-form)))
 
 (defun make-chained (type &rest args)
