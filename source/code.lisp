@@ -40,7 +40,7 @@
       (:json
        (if (typep cause 'chained-error)
            (format stream ", \"cause\": ~a" cause)
-           (progn
+           (let ((*style* :plain))
              (format stream ", \"cause\": \"" )
              (json-escape-string (format nil "~a" cause) stream)
              (format stream "\"")))))))
