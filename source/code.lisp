@@ -120,10 +120,10 @@
 (defmacro !!! (type text-args &rest args)
   `(if *chain-enabled*
       (cl:error  ',(link-error-name type)
-                 :text ,(first args)
+                 :text ,(first text-args)
                  :arguments (list ,@(rest text-args))
                  ,@args)
       (cl:error ',type
-                 :text ,(first args)
+                 :text ,(first text-args)
                  :arguments (list ,@(rest text-args))
                 ,@args)))
