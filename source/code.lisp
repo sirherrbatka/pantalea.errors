@@ -112,10 +112,16 @@
                  (error er))))
            (,!impl)))))
 
-(defun make-chained (type &rest args)
-  (if *chain-enabled*
-      (apply #'make-condition (link-error-name type) args)
-      (apply #'make-condition type args)))
+(defmacro make-chained (type text-args &rest args)
+  `(if *chain-enabled*
+      (make-condition ',(link-error-name type)
+                 :text ,(first text-args)
+                 :arguments (list ,@(rest text-args))
+                 ,@args)
+      (make-condition ',type
+                 :text ,(first text-args)
+                 :arguments (list ,@(rest text-args))
+                ,@args)))
 
 (defmacro !!! (type text-args &rest args)
   `(if *chain-enabled*
